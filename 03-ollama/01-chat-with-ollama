@@ -1,0 +1,79 @@
+def add_two_numbers(a: int, b: int) -> int:
+  """
+  Add two numbers
+
+  Args:
+    a: The first integer number
+    b: The second integer number
+
+  Returns:
+    int: The sum of the two numbers
+  """
+  return int(a) + int(b)
+
+
+def multiply_two_numbers(a: int, b: int) -> int:
+  """
+  Multiply two numbers
+
+  Args:
+    a: The first integer number
+    b: The second integer number
+
+  Returns:
+    int: The multiplied value of the two numbers
+  """
+  return int(a) * int(b)
+
+import ollama
+
+# Defining a variable with all the available functions. 
+
+available_functions = {
+  'add_two_numbers': add_two_numbers,
+  'multiply_two_numbers': multiply_two_numbers,
+}
+
+client = ollama.Client(host='http://host.docker.internal:11434')
+
+# Example #1: Adding Two Number:
+print('\n\nExample #1: Adding two numbers\n\n')
+
+response = client.chat(
+  'llama3.2',
+  messages=[{'role': 'user', 'content': 'What is 10 + 10?'}],
+  tools=[add_two_numbers,multiply_two_numbers], # Actual function reference
+)
+
+
+# Use the returned tool call and arguments provided by the model to call the respective function:
+print(f'Response from LLM:\n{response}')
+
+for tool in response.message.tool_calls or []:
+    function_to_call = available_functions.get(tool.function.name)
+    print(f'Function to call: {function_to_call}')
+    if function_to_call:
+        print('Function output:', function_to_call(**tool.function.arguments))
+    else:
+        print('Function not found:', tool.function.name)
+
+
+# Example #2: Multiplying two numbers
+print('\n\nExample #2: Multiplying two numbers\n\n')
+response = client.chat(
+  'llama3.2',
+  messages=[{'role': 'user', 'content': 'What is 10 x 10?'}],
+  tools=[add_two_numbers,multiply_two_numbers], # Actual function reference
+)
+
+
+# Use the returned tool call and arguments provided by the model to call the respective function:
+print(f'Response from LLM:\n{response}')
+
+for tool in response.message.tool_calls or []:
+    function_to_call = available_functions.get(tool.function.name)
+    print(f'Function to call: {function_to_call}')
+    if function_to_call:
+        print('Function output:', function_to_call(**tool.function.arguments))
+    else:
+        print('Function not found:', tool.function.name)
